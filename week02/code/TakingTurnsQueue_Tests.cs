@@ -12,6 +12,9 @@ public class TakingTurnsQueueTests
     // run until the queue is empty
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
     // Defect(s) Found: 
+    // The queue used Insert(0, person), causing LIFO behavior instead of FIFO.
+    // As a result, people were placed at the front instead of the back, breaking the expected turn rotation.
+    // This caused people to appear more frequently or earlier than they should.
     public void TestTakingTurnsQueue_FiniteRepetition()
     {
         var bob = new Person("Bob", 2);
@@ -44,6 +47,9 @@ public class TakingTurnsQueueTests
     // After running 5 times, add George with 3 turns.  Run until the queue is empty.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, George, Sue, Tim, George, Tim, George
     // Defect(s) Found: 
+    // Same LIFO issue as in the first test: Insert(0, person) caused new or returning persons
+    // to be added at the front of the queue, altering the natural rotation.
+    // This also caused newly added players mid-way to appear too early.
     public void TestTakingTurnsQueue_AddPlayerMidway()
     {
         var bob = new Person("Bob", 2);
@@ -86,6 +92,10 @@ public class TakingTurnsQueueTests
     // Run 10 times.
     // Expected Result: Bob, Tim, Sue, Bob, Tim, Sue, Tim, Sue, Tim, Tim
     // Defect(s) Found: 
+    // The original code did not re-add people with infinite turns (turns = 0).
+    // They were treated as expired instead of being added back every time.
+    // Also affected by the LIFO queue behavior, which caused incorrect rotation.
+
     public void TestTakingTurnsQueue_ForeverZero()
     {
         var timTurns = 0;
@@ -117,6 +127,9 @@ public class TakingTurnsQueueTests
     // Run 10 times.
     // Expected Result: Tim, Sue, Tim, Sue, Tim, Sue, Tim, Tim, Tim, Tim
     // Defect(s) Found: 
+    // People with negative turns (used to represent infinite turns) were not being re-added,
+    // and their turn values were sometimes altered.
+    // Combined with the LIFO queue logic, this resulted in wrong ordering and test failures.
     public void TestTakingTurnsQueue_ForeverNegative()
     {
         var timTurns = -3;
@@ -144,6 +157,8 @@ public class TakingTurnsQueueTests
     // Scenario: Try to get the next person from an empty queue
     // Expected Result: Exception should be thrown with appropriate error message.
     // Defect(s) Found: 
+    // The original implementation may not have thrown an InvalidOperationException
+    // or returned a generic or misleading error message when the queue was empty.
     public void TestTakingTurnsQueue_Empty()
     {
         var players = new TakingTurnsQueue();
